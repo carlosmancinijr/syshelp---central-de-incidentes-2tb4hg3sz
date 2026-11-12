@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-11-12T22:43:08.215Z",
+  "generatedAt": "2026-11-12T22:50:01.789Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "id = @request.auth.id",
-        "view": "id = @request.auth.id",
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
         "create": "",
-        "update": "id = @request.auth.id",
+        "update": "id = @request.auth.id && @request.body.perfil:changed = false && @request.body.matricula:changed = false",
         "delete": "id = @request.auth.id"
       },
       "fields": [
@@ -29,19 +29,423 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        },
+        {
+          "name": "perfil",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "admin",
+            "tecnico",
+            "usuario"
+          ]
+        },
+        {
+          "name": "matricula",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
         "CREATE UNIQUE INDEX `idx_tokenKey__pb_users_auth_` ON `users` (`tokenKey`)",
         "CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''"
+      ]
+    },
+    {
+      "name": "setores",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.perfil = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "sigla",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate"
+          ]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_setores_nome ON setores (nome)"
+      ]
+    },
+    {
+      "name": "categorias",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.perfil = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "sla_horas",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate"
+          ]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_categorias_nome ON categorias (nome)"
+      ]
+    },
+    {
+      "name": "servidores",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.perfil = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "matricula",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "login_rede",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cargo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "funcao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "unidade",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "andar",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "sala",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ramal",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "setor_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "setores"
+        },
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate"
+          ]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_servidores_matricula ON servidores (matricula)",
+        "CREATE INDEX idx_servidores_nome ON servidores (nome)",
+        "CREATE INDEX idx_servidores_login ON servidores (login_rede)"
+      ]
+    },
+    {
+      "name": "chamados",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (@request.auth.perfil = 'admin' || @request.auth.perfil = 'tecnico' || solicitante_id.usuario_id = @request.auth.id)",
+        "view": "@request.auth.id != '' && (@request.auth.perfil = 'admin' || @request.auth.perfil = 'tecnico' || solicitante_id.usuario_id = @request.auth.id)",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && (@request.auth.perfil = 'admin' || @request.auth.perfil = 'tecnico')",
+        "delete": "@request.auth.id != '' && @request.auth.perfil = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "protocolo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "solicitante_nome",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "setor",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cargo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ramal",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "subcategoria",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "prioridade",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P5"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "aberto",
+            "em_atendimento",
+            "aguardando_solicitante",
+            "aguardando_terceiro",
+            "resolvido",
+            "fechado",
+            "cancelado"
+          ]
+        },
+        {
+          "name": "canal",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "portal",
+            "telefone",
+            "presencial",
+            "email",
+            "whatsapp"
+          ]
+        },
+        {
+          "name": "estacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ip",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "sla_horas",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "solucao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "abertura",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "fechamento",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "solicitante_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "servidores"
+        },
+        {
+          "name": "categoria_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "categorias"
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate"
+          ]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_chamados_protocolo ON chamados (protocolo)",
+        "CREATE INDEX idx_chamados_status ON chamados (status)",
+        "CREATE INDEX idx_chamados_abertura ON chamados (abertura DESC)",
+        "CREATE INDEX idx_chamados_estacao ON chamados (estacao)"
       ]
     }
   ]
