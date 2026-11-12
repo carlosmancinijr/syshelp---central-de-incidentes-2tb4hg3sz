@@ -1,29 +1,64 @@
-/* Main App Component - Handles routing (using react-router-dom), query client and other providers - use this file to add all routes */
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+/* Rotas do SysHelp. Páginas públicas: /login. O resto exige sessão. */
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import Index from './pages/Index'
-import NotFound from './pages/NotFound'
-import Layout from './components/Layout'
+import { AuthProvider } from '@/lib/auth'
+import Layout from '@/components/Layout'
+import Protegida, { SomenteAdmin } from '@/components/Protegida'
+import Login from '@/pages/Login'
+import Painel from '@/pages/Painel'
+import Chamados from '@/pages/Chamados'
+import ChamadoDetalhe from '@/pages/ChamadoDetalhe'
+import NovoChamado from '@/pages/NovoChamado'
+import Cadastro from '@/pages/Cadastro'
+import Contas from '@/pages/Contas'
+import NotFound from '@/pages/NotFound'
 
-// ONLY IMPORT AND RENDER WORKING PAGES, NEVER ADD PLACEHOLDER COMPONENTS OR PAGES IN THIS FILE
-// AVOID REMOVING ANY CONTEXT PROVIDERS FROM THIS FILE (e.g. TooltipProvider, Toaster, Sonner)
+function ComLayout() {
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  )
+}
 
 const App = () => (
-  <BrowserRouter>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES MUST BE ADDED HERE */}
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </TooltipProvider>
-  </BrowserRouter>
+  <AuthProvider>
+    <BrowserRouter>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            element={
+              <Protegida>
+                <ComLayout />
+              </Protegida>
+            }
+          >
+            <Route path="/" element={<Painel />} />
+            <Route path="/chamados" element={<Chamados />} />
+            <Route path="/chamados/:id" element={<ChamadoDetalhe />} />
+            <Route path="/novo" element={<NovoChamado />} />
+            <Route path="/cadastro" element={<Cadastro />} />
+            <Route
+              path="/contas"
+              element={
+                <SomenteAdmin>
+                  <Contas />
+                </SomenteAdmin>
+              }
+            />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </TooltipProvider>
+    </BrowserRouter>
+  </AuthProvider>
 )
 
 export default App

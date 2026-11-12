@@ -29,30 +29,21 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         },
         {
           "name": "perfil",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "admin",
-            "tecnico",
-            "usuario"
-          ]
+          "selectValues": ["admin", "tecnico", "usuario"]
         },
         {
           "name": "matricula",
@@ -94,24 +85,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_setores_nome ON setores (nome)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_setores_nome ON setores (nome)"]
     },
     {
       "name": "categorias",
@@ -141,24 +125,17 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
-      "indexes": [
-        "CREATE UNIQUE INDEX idx_categorias_nome ON categorias (nome)"
-      ]
+      "indexes": ["CREATE UNIQUE INDEX idx_categorias_nome ON categorias (nome)"]
     },
     {
       "name": "servidores",
@@ -250,19 +227,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
@@ -335,13 +307,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "P1",
-            "P2",
-            "P3",
-            "P4",
-            "P5"
-          ]
+          "selectValues": ["P1", "P2", "P3", "P4", "P5"]
         },
         {
           "name": "status",
@@ -363,13 +329,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": [
-            "portal",
-            "telefone",
-            "presencial",
-            "email",
-            "whatsapp"
-          ]
+          "selectValues": ["portal", "telefone", "presencial", "email", "whatsapp"]
         },
         {
           "name": "estacao",
@@ -426,19 +386,14 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate"
-          ]
+          "autodateTriggers": ["onCreate"]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": [
-            "onCreate",
-            "onUpdate"
-          ]
+          "autodateTriggers": ["onCreate", "onUpdate"]
         }
       ],
       "indexes": [
