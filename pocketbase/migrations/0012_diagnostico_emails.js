@@ -1,20 +1,16 @@
-// 0012 — diagnóstico: e-mails das contas (NÃO altera nada).
+// 0012 — diagnóstico dos e-mails das contas (somente leitura).
 //
-// Só lista, no log do backend, o e-mail atual de cada conta e qual seria o
-// novo, para descobrir antes de mexer se existe conflito (duas contas com a
-// mesma parte antes do @ — o índice único de e-mail recusaria a troca).
-//
-// Esta migração não grava nada. A troca de domínio vem em outra migração,
-// depois de conferir a lista.
+// Rodou ANTES da troca de domínio (0013) só para conferir o que existia:
+// 382 contas, 381 em @smsub.local, 1 em @syshelp.local, zero conflito de
+// parte local. Não grava nada — fica no histórico como registro da conferência
+// que autorizou a troca em massa.
 
 migrate(
   (app) => {
     const NOVO = 'smsub.prefeitura.sp.gov.br'
     const contas = app.findRecordsByFilter('users', '', 'email', 0, 0)
-
-    console.log('[email] total de contas: ' + contas.length)
-
     const vistos = {}
+
     for (const u of contas) {
       const atual = u.getString('email') || ''
       const partes = atual.split('@')
