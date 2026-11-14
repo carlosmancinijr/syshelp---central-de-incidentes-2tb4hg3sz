@@ -13,8 +13,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Search, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Search, AlertCircle, CheckCircle2, KeyRound, Copy } from 'lucide-react'
 import { formatarData } from '@/lib/formato'
+import { gerarSenhaProvisoria } from '@/lib/senha'
 
 const PERFIS = [
   { valor: 'admin', rotulo: 'Administrador' },
@@ -30,6 +31,8 @@ export default function Contas() {
   const [aviso, setAviso] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [senhaNova, setSenhaNova] = useState<{ nome: string; senha: string } | null>(null)
+  const [copiada, setCopiada] = useState(false)
 
   async function carregar() {
     setCarregando(true)
@@ -68,12 +71,60 @@ export default function Contas() {
     }
   }
 
+  async function gerarSenha(id: string, nome: string) {
+    setAviso('')
+    setErro('')
+    setCopiada(false)
+    if (id === usuario?.id) {
+      setErro('Não é possível gerar senha provisória para a sua própria conta.')
+      return
+    }
+    const senha = gerarSenhaProvisoria()
+    try {
+      await pb.collection('users').update(id, { password: senha, passwordConfirm: senha })
+      setSenhaNova({ nome: nome || 'conta', senha })
+    } catch {
+      setErro('Não foi possível gerar a senha provisória.')
+    }
+  }
+
+  async function copiarSenha() {
+    if (!senhaNova) return
+    try {
+      await navigator.clipboard.writeText(senhaNova.senha)
+      setCopiada(true)
+    } catch {
+      setErro('Não foi possível copiar. Selecione e copie a senha manualmente.')
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Contas e perfis</h1>
         <p className="text-sm text-slate-500">{total.toLocaleString('pt-BR')} conta(s)</p>
       </div>
+
+      {senhaNova && (
+        <Card>
+          <CardContent className="space-y-2 p-4 text-sm">
+            <p className="font-medium">Senha provisória de {senhaNova.nome}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="rounded bg-slate-100 px-2 py-1 font-mono text-base">
+                {senhaNova.senha}
+              </code>
+              <Button size="sm" variant="outline" onClick={copiarSenha}>
+                <Copy className="mr-1 h-4 w-4" />
+                {copiada ? 'Copiada' : 'Copiar'}
+              </Button>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Esta senha aparece uma única vez. Repasse-a à pessoa, que deve trocá-la no próximo
+              acesso.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {aviso && (
         <Alert>
@@ -106,6 +157,7 @@ export default function Contas() {
               <span className="w-24">Matrícula</span>
               <span className="w-40">Perfil</span>
               <span className="w-36">Criada em</span>
+              <span className="w-32" />
             </div>
 
             {carregando && <div className="p-6 text-sm text-slate-500">Carregando...</div>}
@@ -144,6 +196,18 @@ export default function Contas() {
                 </span>
                 <span className="w-36 shrink-0 text-[11px] text-slate-500">
                   {formatarData(c.created)}
+                </span>
+                <span className="w-32 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 w-full"
+                    disabled={c.id === usuario?.id}
+                    onClick={() => gerarSenha(c.id, c.name)}
+                  >
+                    <KeyRound className="mr-1 h-3.5 w-3.5" />
+                    Gerar senha
+                  </Button>
                 </span>
               </div>
             ))}
