@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Search, AlertCircle, CheckCircle2, KeyRound, Copy } from 'lucide-react'
 import { formatarData } from '@/lib/formato'
 import { gerarSenhaProvisoria } from '@/lib/senha'
+import { getErrorMessage } from '@/lib/pocketbase/errors'
 
 const PERFIS = [
   { valor: 'admin', rotulo: 'Administrador' },
@@ -31,7 +32,12 @@ export default function Contas() {
   const [aviso, setAviso] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(true)
-  const [senhaNova, setSenhaNova] = useState<{ nome: string; senha: string } | null>(null)
+  // senha gerada, guardada por conta (não um único valor global — uma segunda
+  // conta não sobrescreve o cartão da primeira)
+  const [senhasNovas, setSenhasNovas] = useState<Record<string, { nome: string; senha: string }>>(
+    {},
+  )
+  const [gerandoId, setGerandoId] = useState<string | null>(null)
   const [copiada, setCopiada] = useState(false)
 
   async function carregar() {
@@ -66,8 +72,8 @@ export default function Contas() {
       await pb.collection('users').update(id, { perfil })
       setAviso('Perfil alterado. A mudança vale no próximo acesso da pessoa.')
       carregar()
-    } catch {
-      setErro('Não foi possível alterar o perfil.')
+    } catch (e) {
+      setErro(`Não foi possível alterar o perfil: ${getErrorMessage(e)}`)
     }
   }
 
@@ -79,6 +85,10 @@ export default function Contas() {
       setErro('Não é possível gerar senha provisória para a sua própria conta.')
       return
     }
+    if (gerandoId) return // já existe uma geração em andamento
+    setGerandoId(c.id)
+    // indicação imediata de progresso: sem isto, o clique parece não ter efeito
+    setAviso(`Gerando senha provisória para ${c.name || 'a conta'}...`)
     const senha = gerarSenhaProvisoria()
     // O login por matrícula procura "<matrícula>@smsub.local": alinha o e-mail da conta a esse
     // padrão, senão a senha gerada nunca seria usada com a matrícula.
@@ -86,16 +96,20 @@ export default function Contas() {
     if (c.matricula) corpo.email = `${String(c.matricula).trim().toLowerCase()}@smsub.local`
     try {
       await pb.collection('users').update(c.id, corpo)
-      setSenhaNova({ nome: c.name || 'conta', senha })
-    } catch {
-      setErro('Não foi possível gerar a senha provisória.')
+      setAviso('')
+      setSenhasNovas((p) => ({ ...p, [c.id]: { nome: c.name || 'conta', senha } }))
+    } catch (e) {
+      // erro real do backend — mostra a mensagem exata (ex.: "Failed to authenticate.",
+      // violação de índice único de e-mail, regra de acesso recusada) e destrava o botão
+      setErro(`Não foi possível gerar a senha provisória: ${getErrorMessage(e)}`)
+    } finally {
+      setGerandoId(null)
     }
   }
 
-  async function copiarSenha() {
-    if (!senhaNova) return
+  async function copiarSenha(senha: string) {
     try {
-      await navigator.clipboard.writeText(senhaNova.senha)
+      await navigator.clipboard.writeText(senha)
       setCopiada(true)
     } catch {
       setErro('Não foi possível copiar. Selecione e copie a senha manualmente.')
@@ -108,27 +122,6 @@ export default function Contas() {
         <h1 className="text-xl font-semibold tracking-tight">Contas e perfis</h1>
         <p className="text-sm text-slate-500">{total.toLocaleString('pt-BR')} conta(s)</p>
       </div>
-
-      {senhaNova && (
-        <Card>
-          <CardContent className="space-y-2 p-4 text-sm">
-            <p className="font-medium">Senha provisória de {senhaNova.nome}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <code className="rounded bg-slate-100 px-2 py-1 font-mono text-base">
-                {senhaNova.senha}
-              </code>
-              <Button size="sm" variant="outline" onClick={copiarSenha}>
-                <Copy className="mr-1 h-4 w-4" />
-                {copiada ? 'Copiada' : 'Copiar'}
-              </Button>
-            </div>
-            <p className="text-[11px] text-slate-500">
-              Esta senha aparece uma única vez. Repasse-a à pessoa, que deve trocá-la no próximo
-              acesso.
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       {aviso && (
         <Alert>
@@ -169,52 +162,81 @@ export default function Contas() {
               <div className="p-6 text-sm text-slate-500">Nenhuma conta encontrada.</div>
             )}
 
-            {itens.map((c) => (
-              <div key={c.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
-                    {c.name || '(sem nome)'}
-                  </span>
-                  <span className="block truncate text-[11px] text-slate-500">{c.email}</span>
-                </span>
-                <span className="w-24 shrink-0 font-mono text-[11px] text-slate-500">
-                  {c.matricula || '—'}
-                </span>
-                <span className="w-40 shrink-0">
-                  <Select
-                    value={c.perfil || 'usuario'}
-                    onValueChange={(v) => mudarPerfil(c.id, v)}
-                    disabled={c.id === usuario?.id}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PERFIS.map((p) => (
-                        <SelectItem key={p.valor} value={p.valor}>
-                          {p.rotulo}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </span>
-                <span className="w-36 shrink-0 text-[11px] text-slate-500">
-                  {formatarData(c.created)}
-                </span>
-                <span className="w-32 shrink-0">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 w-full"
-                    disabled={c.id === usuario?.id}
-                    onClick={() => gerarSenha(c)}
-                  >
-                    <KeyRound className="mr-1 h-3.5 w-3.5" />
-                    Gerar senha
-                  </Button>
-                </span>
-              </div>
-            ))}
+            {itens.map((c) => {
+              const senhaNova = senhasNovas[c.id]
+              return (
+                <div key={c.id}>
+                  <div className="flex flex-wrap items-center gap-3 px-4 py-2.5">
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {c.name || '(sem nome)'}
+                      </span>
+                      <span className="block truncate text-[11px] text-slate-500">{c.email}</span>
+                    </span>
+                    <span className="w-24 shrink-0 font-mono text-[11px] text-slate-500">
+                      {c.matricula || '—'}
+                    </span>
+                    <span className="w-40 shrink-0">
+                      <Select
+                        value={c.perfil || 'usuario'}
+                        onValueChange={(v) => mudarPerfil(c.id, v)}
+                        disabled={c.id === usuario?.id}
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PERFIS.map((p) => (
+                            <SelectItem key={p.valor} value={p.valor}>
+                              {p.rotulo}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </span>
+                    <span className="w-36 shrink-0 text-[11px] text-slate-500">
+                      {formatarData(c.created)}
+                    </span>
+                    <span className="w-32 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-full"
+                        disabled={c.id === usuario?.id || gerandoId !== null}
+                        onClick={() => gerarSenha(c)}
+                      >
+                        <KeyRound className="mr-1 h-3.5 w-3.5" />
+                        {gerandoId === c.id ? 'Gerando...' : 'Gerar senha'}
+                      </Button>
+                    </span>
+                  </div>
+                  {senhaNova && (
+                    <div className="px-4 pb-3">
+                      <div className="rounded-md border bg-slate-50 p-3 text-sm">
+                        <p className="font-medium">Senha provisória de {senhaNova.nome}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <code className="rounded bg-white px-2 py-1 font-mono text-base">
+                            {senhaNova.senha}
+                          </code>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => copiarSenha(senhaNova.senha)}
+                          >
+                            <Copy className="mr-1 h-4 w-4" />
+                            {copiada ? 'Copiada' : 'Copiar'}
+                          </Button>
+                        </div>
+                        <p className="mt-2 text-[11px] text-slate-500">
+                          Esta senha aparece uma única vez. Repasse-a à pessoa, que deve trocá-la no
+                          próximo acesso.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </CardContent>
       </Card>
