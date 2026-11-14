@@ -27,7 +27,7 @@ export default function Login() {
       await entrar(identidade, senha)
       navegar('/', { replace: true })
     } catch {
-      setErro('Matrícula ou senha incorretos.')
+      setErro('Usuário ou senha incorretos.')
     } finally {
       setOcupado(false)
     }
@@ -48,7 +48,7 @@ export default function Login() {
 
         <div className="rounded-2xl border bg-white p-6 shadow-sm">
           <h1 className="text-lg font-semibold">Entrar</h1>
-          <p className="mb-5 mt-0.5 text-xs text-slate-500">Use sua matrícula e sua senha.</p>
+          <p className="mb-5 mt-0.5 text-xs text-slate-500">Use seu usuário e sua senha.</p>
 
           {erro && (
             <Alert variant="destructive" className="mb-4">
@@ -59,9 +59,9 @@ export default function Login() {
 
           <form onSubmit={enviar} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="matricula">Matrícula</Label>
+              <Label htmlFor="usuario">Usuário</Label>
               <Input
-                id="matricula"
+                id="usuario"
                 value={identidade}
                 onChange={(e) => setIdentidade(e.target.value)}
                 placeholder="d736726"

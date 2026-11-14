@@ -46,6 +46,33 @@ export default function NovoChamado() {
       .catch(() => {})
   }, [])
 
+  // IP do acesso atual: consultado a cada entrada na tela (logo após o login
+  // na prática) no endpoint do backend, que lê o IP real da requisição.
+  // Não é detectável sem Active Directory — aqui é só o IP de rede.
+  useEffect(() => {
+    let vivo = true
+    pb.send('/backend/v1/meu-ip', {})
+      .then((r: any) => {
+        if (vivo && r?.ip) setForm((f) => ({ ...f, ip: r.ip }))
+      })
+      .catch(() => {})
+    return () => {
+      vivo = false
+    }
+  }, [])
+
+  // ID da estação: preenchimento MANUAL. Pré-carrega o último valor salvo
+  // pelo próprio usuário (coleção ambientes_usuario), se houver.
+  useEffect(() => {
+    if (!usuario?.id) return
+    pb.collection('ambientes_usuario')
+      .getFirstListItem(`usuario_id='${usuario.id}'`)
+      .then((a) => {
+        if (a?.estacao) setForm((f) => ({ ...f, estacao: f.estacao || a.estacao }))
+      })
+      .catch(() => {})
+  }, [usuario?.id])
+
   // usuário comum: carrega o próprio cadastro automaticamente
   useEffect(() => {
     if (podeAtender || !usuario?.matricula) return
@@ -108,6 +135,25 @@ export default function NovoChamado() {
 
     setEnviando(true)
     try {
+      // guarda o último ID de estação informado, para pré-preencher no próximo login
+      if (usuario?.id && form.estacao.trim()) {
+        pb.collection('ambientes_usuario')
+          .getFirstListItem(`usuario_id='${usuario.id}'`)
+          .then((a) => {
+            if (a.estacao !== form.estacao.trim().toUpperCase()) {
+              pb.collection('ambientes_usuario').update(a.id, {
+                estacao: form.estacao.trim().toUpperCase(),
+              })
+            }
+          })
+          .catch(() => {
+            pb.collection('ambientes_usuario').create({
+              usuario_id: usuario.id,
+              estacao: form.estacao.trim().toUpperCase(),
+            })
+          })
+      }
+
       const ano = new Date().getFullYear()
       const total = await pb.collection('chamados').getList(1, 1)
       const seq = String(total.totalItems + 1).padStart(5, '0')
@@ -309,9 +355,8 @@ export default function NovoChamado() {
                   placeholder="SMSPSEC405"
                 />
                 <p className="text-[11px] text-slate-500">
-                  {ultimaEstacao
-                    ? `Do último chamado: ${ultimaEstacao.estacao}. Ajuste se mudou de máquina.`
-                    : 'Nome da máquina na rede.'}
+                  Preenchimento manual — informe o nome da máquina na rede.
+                  {ultimaEstacao ? ` Último usado: ${ultimaEstacao.estacao}.` : ''}
                 </p>
               </div>
               <div className="space-y-1.5">
@@ -323,6 +368,9 @@ export default function NovoChamado() {
                   placeholder="10.21.64.168"
                   inputMode="numeric"
                 />
+                <p className="text-[11px] text-slate-500">
+                  Detectado automaticamente do seu acesso — ajuste se necessário.
+                </p>
               </div>
             </div>
           </CardContent>
