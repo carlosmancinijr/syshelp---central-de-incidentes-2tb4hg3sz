@@ -4,9 +4,11 @@ import pb from '@/lib/pocketbase/client'
 import { useAuth } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Ticket, Clock, CheckCircle2 } from 'lucide-react'
 import { formatarData } from '@/lib/formato'
-import { rotuloStatus, corStatus } from '@/lib/status'
+import { rotuloStatus, corStatus, filtroNaoEncerrados } from '@/lib/status'
+import { History } from 'lucide-react'
 
 type Resumo = {
   total: number
@@ -41,7 +43,7 @@ export default function Painel() {
             filter: `(status='resolvido' || status='fechado') && fechamento>='${inicioMes.toISOString().replace('T', ' ')}'${filtroDono}`,
           }),
           pb.collection('chamados').getList(1, 8, {
-            filter: `id!=''${filtroDono}`,
+            filter: `id!='' && (${filtroNaoEncerrados()})${filtroDono}`,
             sort: '-abertura',
           }),
         ])
@@ -83,6 +85,15 @@ export default function Painel() {
         <p className="text-sm text-slate-500">
           {podeAtender ? 'Visão geral de todos os chamados' : 'Seus chamados'}
         </p>
+      </div>
+
+      <div className="flex justify-end">
+        <Button asChild variant="outline">
+          <Link to="/historico">
+            <History className="mr-1.5 h-4 w-4" />
+            Histórico de chamados encerrados
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">

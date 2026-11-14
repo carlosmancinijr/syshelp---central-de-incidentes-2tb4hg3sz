@@ -1,12 +1,21 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
-import { LayoutDashboard, Ticket, PlusCircle, Users, LogOut, ShieldCheck } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Ticket,
+  PlusCircle,
+  Users,
+  LogOut,
+  ShieldCheck,
+  History,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const itens = [
   { to: '/', label: 'Painel', icone: LayoutDashboard, soAdmin: false },
   { to: '/chamados', label: 'Chamados', icone: Ticket, soAdmin: false },
+  { to: '/historico', label: 'Histórico', icone: History, soAdmin: false },
   { to: '/novo', label: 'Abrir chamado', icone: PlusCircle, soAdmin: false },
   { to: '/cadastro', label: 'Servidores', icone: Users, soAdmin: false },
   { to: '/contas', label: 'Contas e perfis', icone: ShieldCheck, soAdmin: true },

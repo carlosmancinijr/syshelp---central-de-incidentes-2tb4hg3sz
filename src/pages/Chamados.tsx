@@ -4,8 +4,6 @@ import pb from '@/lib/pocketbase/client'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -13,9 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
-import { formatarData } from '@/lib/formato'
-import { rotuloStatus, corStatus, corPrioridade, STATUS_ORDEM } from '@/lib/status'
+import { Search, ChevronLeft, ChevronRight, History } from 'lucide-react'
+import { rotuloStatus, STATUS_ORDEM, STATUS_ENCERRADO, filtroNaoEncerrados } from '@/lib/status'
+import TabelaChamados from '@/components/TabelaChamados'
 
 const POR_PAGINA = 25
 
@@ -29,7 +27,7 @@ export default function Chamados() {
   const [carregando, setCarregando] = useState(true)
 
   const filtro = useMemo(() => {
-    const partes: string[] = []
+    const partes: string[] = [filtroNaoEncerrados()]
     if (!podeAtender && usuario?.id) {
       partes.push(`solicitante_id.usuario_id='${usuario.id}'`)
     }
@@ -78,11 +76,21 @@ export default function Chamados() {
           <h1 className="text-xl font-semibold tracking-tight">
             {podeAtender ? 'Chamados' : 'Meus chamados'}
           </h1>
-          <p className="text-sm text-slate-500">{total.toLocaleString('pt-BR')} chamado(s)</p>
+          <p className="text-sm text-slate-500">
+            {total.toLocaleString('pt-BR')} chamado(s) em andamento
+          </p>
         </div>
-        <Button asChild>
-          <Link to="/novo">Abrir chamado</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link to="/historico">
+              <History className="mr-1.5 h-4 w-4" />
+              Histórico
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link to="/novo">Abrir chamado</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -101,70 +109,18 @@ export default function Chamados() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos os status</SelectItem>
-            {STATUS_ORDEM.map((s) => (
-              <SelectItem key={s} value={s}>
-                {rotuloStatus(s)}
-              </SelectItem>
-            ))}
+            {STATUS_ORDEM.filter((s) => !(STATUS_ENCERRADO as readonly string[]).includes(s)).map(
+              (s) => (
+                <SelectItem key={s} value={s}>
+                  {rotuloStatus(s)}
+                </SelectItem>
+              ),
+            )}
           </SelectContent>
         </Select>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="divide-y">
-            <div className="hidden gap-3 bg-slate-50 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-slate-500 sm:flex">
-              <span className="w-32">Protocolo</span>
-              <span className="flex-1">Incidente</span>
-              <span className="w-28">Estação</span>
-              <span className="w-16">Prior.</span>
-              <span className="w-36">Status</span>
-              <span className="w-32">Aberto em</span>
-            </div>
-
-            {carregando && <div className="p-6 text-sm text-slate-500">Carregando...</div>}
-            {!carregando && itens.length === 0 && (
-              <div className="p-6 text-sm text-slate-500">
-                Nenhum chamado encontrado com esses filtros.
-              </div>
-            )}
-
-            {itens.map((c) => (
-              <Link
-                key={c.id}
-                to={`/chamados/${c.id}`}
-                className="flex flex-wrap items-center gap-3 px-4 py-2.5 hover:bg-slate-50 sm:flex-nowrap"
-              >
-                <span className="w-32 shrink-0 font-mono text-[11px] text-slate-500">
-                  {c.protocolo}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm">{c.titulo}</span>
-                  <span className="block truncate text-[11px] text-slate-500">
-                    {c.solicitante_nome || '—'} · {c.setor || '—'}
-                  </span>
-                </span>
-                <span className="w-28 shrink-0 font-mono text-[11px] text-slate-500">
-                  {c.estacao || '—'}
-                </span>
-                <span className="w-16 shrink-0">
-                  <Badge variant="secondary" className={corPrioridade(c.prioridade)}>
-                    {c.prioridade || '—'}
-                  </Badge>
-                </span>
-                <span className="w-36 shrink-0">
-                  <Badge variant="secondary" className={corStatus(c.status)}>
-                    {rotuloStatus(c.status)}
-                  </Badge>
-                </span>
-                <span className="w-32 shrink-0 text-[11px] text-slate-500">
-                  {formatarData(c.abertura)}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <TabelaChamados itens={itens} carregando={carregando} />
 
       <div className="flex items-center justify-between">
         <span className="text-xs text-slate-500">

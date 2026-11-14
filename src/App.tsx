@@ -9,6 +9,7 @@ import Protegida, { SomenteAdmin } from '@/components/Protegida'
 import Login from '@/pages/Login'
 import Painel from '@/pages/Painel'
 import Chamados from '@/pages/Chamados'
+import Historico from '@/pages/Historico'
 import ChamadoDetalhe from '@/pages/ChamadoDetalhe'
 import NovoChamado from '@/pages/NovoChamado'
 import Cadastro from '@/pages/Cadastro'
@@ -41,6 +42,7 @@ const App = () => (
           >
             <Route path="/" element={<Painel />} />
             <Route path="/chamados" element={<Chamados />} />
+            <Route path="/historico" element={<Historico />} />
             <Route path="/chamados/:id" element={<ChamadoDetalhe />} />
             <Route path="/novo" element={<NovoChamado />} />
             <Route path="/cadastro" element={<Cadastro />} />

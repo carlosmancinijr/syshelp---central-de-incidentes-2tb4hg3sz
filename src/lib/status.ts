@@ -38,3 +38,15 @@ export const STATUS_ORDEM = [
   'fechado',
   'cancelado',
 ]
+
+/** Status que representam chamado finalizado (encerrado). */
+export const STATUS_ENCERRADO = ['resolvido', 'fechado', 'cancelado'] as const
+
+export function ehStatusEncerrado(s?: string) {
+  return !!s && (STATUS_ENCERRADO as readonly string[]).includes(s)
+}
+
+/** Filtro PocketBase que exclui os chamados encerrados (para listagens ativas). */
+export function filtroNaoEncerrados() {
+  return STATUS_ENCERRADO.map((s) => `status!='${s}'`).join(' && ')
+}
