@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T16:32:03.478Z",
+  "generatedAt": "2026-11-14T17:44:27.371Z",
   "collections": [
     {
       "name": "users",
@@ -29,21 +29,30 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         },
         {
           "name": "perfil",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["admin", "tecnico", "usuario"]
+          "selectValues": [
+            "admin",
+            "tecnico",
+            "usuario"
+          ]
         },
         {
           "name": "matricula",
@@ -86,17 +95,24 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         }
       ],
-      "indexes": ["CREATE UNIQUE INDEX idx_setores_nome ON setores (nome)"]
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_setores_nome ON setores (nome)"
+      ]
     },
     {
       "name": "categorias",
@@ -126,24 +142,37 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         },
         {
           "name": "criticidade_padrao",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["P1", "P2", "P3", "P4", "P5"]
+          "selectValues": [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P5"
+          ]
         }
       ],
-      "indexes": ["CREATE UNIQUE INDEX idx_categorias_nome ON categorias (nome)"]
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_categorias_nome ON categorias (nome)"
+      ]
     },
     {
       "name": "servidores",
@@ -235,14 +264,19 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         }
       ],
       "indexes": [
@@ -315,7 +349,13 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["P1", "P2", "P3", "P4", "P5"]
+          "selectValues": [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P5"
+          ]
         },
         {
           "name": "status",
@@ -337,7 +377,13 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["portal", "telefone", "presencial", "email", "whatsapp"]
+          "selectValues": [
+            "portal",
+            "telefone",
+            "presencial",
+            "email",
+            "whatsapp"
+          ]
         },
         {
           "name": "estacao",
@@ -394,21 +440,83 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        },
+        {
+          "name": "prazo_resposta",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "prazo_resolucao",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "primeira_resposta_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "pausado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "minutos_pausados",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "minutos_uteis_gastos",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "sla_situacao",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "no_prazo",
+            "em_risco",
+            "violado",
+            "cumprido",
+            "pausado"
+          ]
+        },
+        {
+          "name": "responsavel_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
         }
       ],
       "indexes": [
         "CREATE UNIQUE INDEX idx_chamados_protocolo ON chamados (protocolo)",
         "CREATE INDEX idx_chamados_status ON chamados (status)",
         "CREATE INDEX idx_chamados_abertura ON chamados (abertura DESC)",
-        "CREATE INDEX idx_chamados_estacao ON chamados (estacao)"
+        "CREATE INDEX idx_chamados_estacao ON chamados (estacao)",
+        "CREATE INDEX `idx_chamados_prazo_resolucao` ON `chamados` (prazo_resolucao)"
       ]
     },
     {
@@ -440,17 +548,159 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         }
       ],
-      "indexes": ["CREATE UNIQUE INDEX idx_ambientes_usuario ON ambientes_usuario (usuario_id)"]
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_ambientes_usuario ON ambientes_usuario (usuario_id)"
+      ]
+    },
+    {
+      "name": "sla_calendario",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.perfil = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "dias",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate"
+          ]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "sla_regras",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "update": "@request.auth.id != '' && @request.auth.perfil = 'admin'",
+        "delete": "@request.auth.id != '' && @request.auth.perfil = 'admin'"
+      },
+      "fields": [
+        {
+          "name": "prioridade",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P5"
+          ]
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resposta_min",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "atualizacao_min",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resolucao_min",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "meta_percentual",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate"
+          ]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_sla_regras_prioridade ON sla_regras (prioridade)"
+      ]
     }
   ]
 }

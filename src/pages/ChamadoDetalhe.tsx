@@ -15,6 +15,7 @@ import {
 import { ArrowLeft } from 'lucide-react'
 import { formatarData } from '@/lib/formato'
 import { rotuloStatus, corStatus, corPrioridade, STATUS_ORDEM } from '@/lib/status'
+import { corSla, restanteEmTexto, percentualConsumido, minutosEmTexto } from '@/lib/sla'
 
 function Linha({ rotulo, valor }: { rotulo: string; valor?: string | null }) {
   return (
@@ -54,8 +55,17 @@ export default function ChamadoDetalhe() {
   async function mudarStatus(novo: string) {
     setSalvando(true)
     try {
-      const atualizado = await pb.collection('chamados').update(String(id), { status: novo })
-      setC({ ...c, status: atualizado.status })
+      // encerrar grava o fechamento (é ele que fecha a conta do SLA);
+      // reabrir limpa a data para o chamado voltar a contar.
+      const encerra = novo === 'resolvido' || novo === 'fechado'
+      const dados: Record<string, any> = { status: novo }
+      if (encerra && !c.fechamento) {
+        dados.fechamento = new Date().toISOString().replace('T', ' ')
+      }
+      if (!encerra && c.fechamento) dados.fechamento = ''
+
+      const atualizado = await pb.collection('chamados').update(String(id), dados)
+      setC(atualizado)
     } catch {
       setErro('Não foi possível alterar o status.')
     } finally {
@@ -81,6 +91,17 @@ export default function ChamadoDetalhe() {
     return <div className="p-6 text-sm text-slate-500">Carregando...</div>
   }
 
+  const cumprimentoSla =
+    c.sla_situacao === 'violado'
+      ? 'estourado'
+      : c.sla_situacao === 'em_risco'
+        ? 'em risco'
+        : c.sla_situacao === 'cumprido'
+          ? 'cumprido'
+          : c.sla_situacao === 'pausado'
+            ? 'pausado'
+            : 'no prazo'
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -103,8 +124,48 @@ export default function ChamadoDetalhe() {
           <Badge variant="secondary" className={corStatus(c.status)}>
             {rotuloStatus(c.status)}
           </Badge>
+          {c.sla_situacao && (
+            <Badge variant="secondary" className={corSla(c.sla_situacao)}>
+              SLA: {cumprimentoSla}
+            </Badge>
+          )}
         </div>
       </div>
+
+      {c.prazo_resolucao && (
+        <Card>
+          <CardContent className="space-y-1 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-medium text-slate-700">
+                1ª resposta até {formatarData(c.prazo_resposta)}
+                <span className="mx-2 text-slate-300">|</span>
+                Resolução até {formatarData(c.prazo_resolucao)}
+              </span>
+              <span className="text-slate-500">
+                {c.minutos_uteis_gastos
+                  ? `${minutosEmTexto(c.minutos_uteis_gastos)} úteis até a conclusão`
+                  : restanteEmTexto(c.prazo_resolucao)}
+              </span>
+            </div>
+            {!['cumprido', 'violado'].includes(c.sla_situacao) && (
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={
+                    (percentualConsumido(c.abertura, c.prazo_resolucao) || 0) >= 100
+                      ? 'h-full bg-red-500'
+                      : (percentualConsumido(c.abertura, c.prazo_resolucao) || 0) >= 80
+                        ? 'h-full bg-amber-500'
+                        : 'h-full bg-emerald-500'
+                  }
+                  style={{
+                    width: `${Math.min(100, percentualConsumido(c.abertura, c.prazo_resolucao) || 0)}%`,
+                  }}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {podeAtender && (
         <Card>
@@ -162,7 +223,23 @@ export default function ChamadoDetalhe() {
             <Linha rotulo="Estação" valor={c.estacao} />
             <Linha rotulo="IP" valor={c.ip} />
             <Linha rotulo="Canal" valor={c.canal} />
-            <Linha rotulo="SLA" valor={c.sla_horas ? `${c.sla_horas} h` : null} />
+            <Linha rotulo="SLA da categoria" valor={c.sla_horas ? `${c.sla_horas} h` : null} />
+            <Linha
+              rotulo="1ª resposta até"
+              valor={c.prazo_resposta ? formatarData(c.prazo_resposta) : null}
+            />
+            <Linha
+              rotulo="Resolução até"
+              valor={c.prazo_resolucao ? formatarData(c.prazo_resolucao) : null}
+            />
+            <Linha
+              rotulo="1ª resposta em"
+              valor={c.primeira_resposta_em ? formatarData(c.primeira_resposta_em) : null}
+            />
+            <Linha
+              rotulo="Tempo útil gasto"
+              valor={c.minutos_uteis_gastos ? minutosEmTexto(c.minutos_uteis_gastos) : null}
+            />
             <Linha rotulo="Aberto em" valor={formatarData(c.abertura)} />
             <Linha rotulo="Fechado em" valor={formatarData(c.fechamento)} />
           </CardContent>

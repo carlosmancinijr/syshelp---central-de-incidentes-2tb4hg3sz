@@ -15,6 +15,7 @@ import NovoChamado from '@/pages/NovoChamado'
 import Cadastro from '@/pages/Cadastro'
 import Contas from '@/pages/Contas'
 import Categorias from '@/pages/Categorias'
+import Sla from '@/pages/Sla'
 import NotFound from '@/pages/NotFound'
 
 function ComLayout() {
@@ -60,6 +61,14 @@ const App = () => (
               element={
                 <SomenteAdmin>
                   <Categorias />
+                </SomenteAdmin>
+              }
+            />
+            <Route
+              path="/sla"
+              element={
+                <SomenteAdmin>
+                  <Sla />
                 </SomenteAdmin>
               }
             />
