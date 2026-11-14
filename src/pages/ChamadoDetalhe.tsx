@@ -16,6 +16,7 @@ import { ArrowLeft } from 'lucide-react'
 import { formatarData } from '@/lib/formato'
 import { rotuloStatus, corStatus, corPrioridade, STATUS_ORDEM } from '@/lib/status'
 import { corSla, restanteEmTexto, percentualConsumido, minutosEmTexto } from '@/lib/sla'
+import BotaoCancelar from '@/components/BotaoCancelar'
 
 function Linha({ rotulo, valor }: { rotulo: string; valor?: string | null }) {
   return (
@@ -40,7 +41,7 @@ export default function ChamadoDetalhe() {
       try {
         const r = await pb
           .collection('chamados')
-          .getOne(String(id), { expand: 'solicitante_id,categoria_id' })
+          .getOne(String(id), { expand: 'solicitante_id,categoria_id,cancelado_por' })
         if (vivo) setC(r)
       } catch {
         if (vivo) setErro('Chamado não encontrado ou você não tem acesso a ele.')
@@ -176,7 +177,9 @@ export default function ChamadoDetalhe() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {STATUS_ORDEM.map((s) => (
+                {/* cancelamento fica de fora daqui: ele exige motivo e tem
+                    botão próprio, para não sair sem justificativa */}
+                {STATUS_ORDEM.filter((s) => s !== 'cancelado').map((s) => (
                   <SelectItem key={s} value={s}>
                     {rotuloStatus(s)}
                   </SelectItem>
@@ -184,6 +187,25 @@ export default function ChamadoDetalhe() {
               </SelectContent>
             </Select>
             {salvando && <span className="text-xs text-slate-500">salvando...</span>}
+            <span className="ml-auto">
+              <BotaoCancelar
+                chamado={c}
+                aoCancelar={(atualizado) => setC({ ...c, ...atualizado })}
+              />
+            </span>
+          </CardContent>
+        </Card>
+      )}
+
+      {c.status === 'cancelado' && (
+        <Card>
+          <CardContent className="space-y-1 p-3 text-sm">
+            <p className="font-medium text-slate-700">Chamado cancelado</p>
+            <p className="text-slate-600">{c.motivo_cancelamento || 'Motivo não registrado.'}</p>
+            <p className="text-[11px] text-slate-500">
+              {c.cancelado_em ? formatarData(c.cancelado_em) : '—'}
+              {c.expand?.cancelado_por?.name ? ` · por ${c.expand.cancelado_por.name}` : ''}
+            </p>
           </CardContent>
         </Card>
       )}

@@ -4,16 +4,21 @@ import { Card, CardContent } from '@/components/ui/card'
 import { formatarData } from '@/lib/formato'
 import { rotuloStatus, corStatus, corPrioridade } from '@/lib/status'
 import { corSla, restanteEmTexto } from '@/lib/sla'
+import BotaoCancelar from '@/components/BotaoCancelar'
 
 /** Linhas da listagem de chamados — compartilhada entre /chamados e /historico. */
 export default function TabelaChamados({
   itens,
   carregando,
   vazio = 'Nenhum chamado encontrado com esses filtros.',
+  podeCancelar = false,
+  aoCancelar,
 }: {
   itens: any[]
   carregando?: boolean
   vazio?: string
+  podeCancelar?: boolean
+  aoCancelar?: (atualizado: any) => void
 }) {
   return (
     <Card>
@@ -35,61 +40,74 @@ export default function TabelaChamados({
           )}
 
           {itens.map((c) => (
-            <Link
+            <div
               key={c.id}
-              to={`/chamados/${c.id}`}
               className="flex flex-wrap items-center gap-3 px-4 py-2.5 hover:bg-slate-50 sm:flex-nowrap"
             >
-              <span className="w-32 shrink-0 font-mono text-[11px] text-slate-500">
-                {c.protocolo}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm">{c.titulo}</span>
-                <span className="block truncate text-[11px] text-slate-500">
-                  {c.solicitante_nome || '—'} · {c.setor || '—'}
+              <Link
+                to={`/chamados/${c.id}`}
+                className="flex min-w-0 flex-1 flex-wrap items-center gap-3 sm:flex-nowrap"
+              >
+                <span className="w-32 shrink-0 font-mono text-[11px] text-slate-500">
+                  {c.protocolo}
                 </span>
-              </span>
-              <span className="w-28 shrink-0 font-mono text-[11px] text-slate-500">
-                {c.estacao || '—'}
-              </span>
-              <span className="w-16 shrink-0">
-                <Badge variant="secondary" className={corPrioridade(c.prioridade)}>
-                  {c.prioridade || '—'}
-                </Badge>
-              </span>
-              <span className="w-36 shrink-0">
-                <Badge variant="secondary" className={corStatus(c.status)}>
-                  {rotuloStatus(c.status)}
-                </Badge>
-              </span>
-              <span className="w-40 shrink-0">
-                {c.sla_situacao ? (
-                  <span className="flex flex-col gap-0.5">
-                    <Badge variant="secondary" className={corSla(c.sla_situacao)}>
-                      {c.sla_situacao === 'violado'
-                        ? 'Estourado'
-                        : c.sla_situacao === 'cumprido'
-                          ? 'No prazo'
-                          : c.sla_situacao === 'em_risco'
-                            ? 'Em risco'
-                            : c.sla_situacao === 'pausado'
-                              ? 'Pausado'
-                              : 'No prazo'}
-                    </Badge>
-                    {c.prazo_resolucao && !['cumprido', 'violado'].includes(c.sla_situacao) && (
-                      <span className="text-[10px] text-slate-500">
-                        {restanteEmTexto(c.prazo_resolucao)}
-                      </span>
-                    )}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm">{c.titulo}</span>
+                  <span className="block truncate text-[11px] text-slate-500">
+                    {c.solicitante_nome || '—'} · {c.setor || '—'}
                   </span>
-                ) : (
-                  <span className="text-[11px] text-slate-400">sem prazo</span>
-                )}
-              </span>
-              <span className="w-32 shrink-0 text-[11px] text-slate-500">
-                {formatarData(c.abertura)}
-              </span>
-            </Link>
+                </span>
+                <span className="w-28 shrink-0 font-mono text-[11px] text-slate-500">
+                  {c.estacao || '—'}
+                </span>
+                <span className="w-16 shrink-0">
+                  <Badge variant="secondary" className={corPrioridade(c.prioridade)}>
+                    {c.prioridade || '—'}
+                  </Badge>
+                </span>
+                <span className="w-36 shrink-0">
+                  <Badge variant="secondary" className={corStatus(c.status)}>
+                    {rotuloStatus(c.status)}
+                  </Badge>
+                </span>
+                <span className="w-40 shrink-0">
+                  {c.sla_situacao ? (
+                    <span className="flex flex-col gap-0.5">
+                      <Badge variant="secondary" className={corSla(c.sla_situacao)}>
+                        {c.sla_situacao === 'violado'
+                          ? 'Estourado'
+                          : c.sla_situacao === 'cumprido'
+                            ? 'No prazo'
+                            : c.sla_situacao === 'em_risco'
+                              ? 'Em risco'
+                              : c.sla_situacao === 'pausado'
+                                ? 'Pausado'
+                                : 'No prazo'}
+                      </Badge>
+                      {c.prazo_resolucao && !['cumprido', 'violado'].includes(c.sla_situacao) && (
+                        <span className="text-[10px] text-slate-500">
+                          {restanteEmTexto(c.prazo_resolucao)}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-slate-400">sem prazo</span>
+                  )}
+                </span>
+                <span className="w-32 shrink-0 text-[11px] text-slate-500">
+                  {formatarData(c.abertura)}
+                </span>
+              </Link>
+              {podeCancelar && c.status !== 'cancelado' && (
+                <span className="shrink-0">
+                  <BotaoCancelar
+                    chamado={c}
+                    variante="ghost"
+                    aoCancelar={(atualizado) => aoCancelar?.(atualizado)}
+                  />
+                </span>
+              )}
+            </div>
           ))}
         </div>
       </CardContent>

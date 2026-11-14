@@ -25,6 +25,7 @@ export default function Chamados() {
   const [busca, setBusca] = useState('')
   const [status, setStatus] = useState('todos')
   const [carregando, setCarregando] = useState(true)
+  const [recarregar, setRecarregar] = useState(0)
 
   const filtro = useMemo(() => {
     const partes: string[] = [filtroNaoEncerrados()]
@@ -61,7 +62,7 @@ export default function Chamados() {
       vivo = false
       clearTimeout(t)
     }
-  }, [filtro, pagina])
+  }, [filtro, pagina, recarregar])
 
   useEffect(() => {
     setPagina(1)
@@ -120,7 +121,12 @@ export default function Chamados() {
         </Select>
       </div>
 
-      <TabelaChamados itens={itens} carregando={carregando} />
+      <TabelaChamados
+        itens={itens}
+        carregando={carregando}
+        podeCancelar={podeAtender}
+        aoCancelar={() => setRecarregar((n) => n + 1)}
+      />
 
       <div className="flex items-center justify-between">
         <span className="text-xs text-slate-500">
