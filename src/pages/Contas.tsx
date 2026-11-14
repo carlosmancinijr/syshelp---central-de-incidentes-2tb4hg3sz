@@ -71,18 +71,22 @@ export default function Contas() {
     }
   }
 
-  async function gerarSenha(id: string, nome: string) {
+  async function gerarSenha(c: any) {
     setAviso('')
     setErro('')
     setCopiada(false)
-    if (id === usuario?.id) {
+    if (c.id === usuario?.id) {
       setErro('Não é possível gerar senha provisória para a sua própria conta.')
       return
     }
     const senha = gerarSenhaProvisoria()
+    // O login por matrícula procura "<matrícula>@smsub.local": alinha o e-mail da conta a esse
+    // padrão, senão a senha gerada nunca seria usada com a matrícula.
+    const corpo: Record<string, string> = { password: senha, passwordConfirm: senha }
+    if (c.matricula) corpo.email = `${String(c.matricula).trim().toLowerCase()}@smsub.local`
     try {
-      await pb.collection('users').update(id, { password: senha, passwordConfirm: senha })
-      setSenhaNova({ nome: nome || 'conta', senha })
+      await pb.collection('users').update(c.id, corpo)
+      setSenhaNova({ nome: c.name || 'conta', senha })
     } catch {
       setErro('Não foi possível gerar a senha provisória.')
     }
@@ -203,7 +207,7 @@ export default function Contas() {
                     variant="outline"
                     className="h-8 w-full"
                     disabled={c.id === usuario?.id}
-                    onClick={() => gerarSenha(c.id, c.name)}
+                    onClick={() => gerarSenha(c)}
                   >
                     <KeyRound className="mr-1 h-3.5 w-3.5" />
                     Gerar senha
