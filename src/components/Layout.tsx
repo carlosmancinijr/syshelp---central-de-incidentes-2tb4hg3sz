@@ -9,6 +9,7 @@ import {
   LogOut,
   ShieldCheck,
   History,
+  Tags,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ const itens = [
   { to: '/novo', label: 'Abrir chamado', icone: PlusCircle, soAdmin: false },
   { to: '/cadastro', label: 'Servidores', icone: Users, soAdmin: false },
   { to: '/contas', label: 'Contas e perfis', icone: ShieldCheck, soAdmin: true },
+  { to: '/categorias', label: 'Categorias', icone: Tags, soAdmin: true },
 ]
 
 export default function Layout({ children }: { children?: React.ReactNode }) {

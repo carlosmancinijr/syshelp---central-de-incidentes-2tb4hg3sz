@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T15:21:15.694Z",
+  "generatedAt": "2026-11-14T16:32:03.478Z",
   "collections": [
     {
       "name": "users",
@@ -134,6 +134,13 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "criticidade_padrao",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["P1", "P2", "P3", "P4", "P5"]
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_categorias_nome ON categorias (nome)"]

@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { corPrioridade } from '@/lib/status'
 import { Search, Check, AlertCircle } from 'lucide-react'
 
 export default function NovoChamado() {
@@ -31,13 +33,16 @@ export default function NovoChamado() {
     titulo: '',
     descricao: '',
     categoria_id: '',
-    prioridade: 'P3',
     canal: 'portal',
     estacao: '',
     ip: '',
   })
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
+
+  // criticidade calculada a partir da categoria escolhida (o usuário não edita)
+  const criticidadeCalculada =
+    categorias.find((c) => c.id === form.categoria_id)?.criticidade_padrao || 'P3'
 
   useEffect(() => {
     pb.collection('categorias')
@@ -168,7 +173,8 @@ export default function NovoChamado() {
         cargo: servidor.cargo || '',
         ramal: servidor.ramal || '',
         categoria_id: form.categoria_id,
-        prioridade: form.prioridade,
+        // criticidade vem da categoria (o hook do backend confirma do lado do servidor)
+        prioridade: criticidadeCalculada,
         status: 'aberto',
         canal: form.canal,
         estacao: form.estacao.trim().toUpperCase(),
@@ -311,22 +317,24 @@ export default function NovoChamado() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Prioridade</Label>
-                <Select
-                  value={form.prioridade}
-                  onValueChange={(v) => setForm({ ...form, prioridade: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['P1', 'P2', 'P3', 'P4', 'P5'].map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {p}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Criticidade</Label>
+                <div className="flex h-9 items-center gap-2 rounded-md border bg-slate-50 px-3 text-sm">
+                  {form.categoria_id ? (
+                    <>
+                      <Badge variant="secondary" className={corPrioridade(criticidadeCalculada)}>
+                        {criticidadeCalculada}
+                      </Badge>
+                      <span className="truncate text-xs text-slate-500">
+                        {categorias.find((c) => c.id === form.categoria_id)?.nome || ''}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-slate-400">escolha uma categoria</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Definida automaticamente pela categoria escolhida.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label>Canal</Label>
