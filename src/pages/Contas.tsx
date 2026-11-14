@@ -90,10 +90,10 @@ export default function Contas() {
     // indicação imediata de progresso: sem isto, o clique parece não ter efeito
     setAviso(`Gerando senha provisória para ${c.name || 'a conta'}...`)
     const senha = gerarSenhaProvisoria()
-    // O login por matrícula procura "<matrícula>@smsub.local": alinha o e-mail da conta a esse
-    // padrão, senão a senha gerada nunca seria usada com a matrícula.
-    const corpo: Record<string, string> = { password: senha, passwordConfirm: senha }
-    if (c.matricula) corpo.email = `${String(c.matricula).trim().toLowerCase()}@smsub.local`
+    // Redefine apenas a senha: o login por matrícula usa o campo "matricula" como identity
+    // (migração 0008), então o e-mail interno da conta não precisa ser tocado — e trocá-lo
+    // quebraria quem já entra pelo e-mail antigo.
+    const corpo = { password: senha, passwordConfirm: senha }
     try {
       await pb.collection('users').update(c.id, corpo)
       setAviso('')

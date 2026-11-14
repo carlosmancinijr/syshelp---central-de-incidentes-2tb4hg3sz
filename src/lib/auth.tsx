@@ -40,11 +40,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function entrar(identidade: string, senha: string) {
     setCarregando(true)
     try {
-      // aceita matrícula ou e-mail: a matrícula é convertida em e-mail interno
-      const email = identidade.includes('@')
+      // A coleção users aceita a matrícula como identity do login por senha
+      // (passwordAuth.identityFields = ["email", "matricula"] — migração 0008):
+      // quem tem e-mail interno diferente de <matrícula>@smsub.local (ex.:
+      // cmancini@smsub.local, para a matrícula d736726) entra pela matrícula.
+      // Um valor digitado com @ continua indo como e-mail, como antes.
+      const identity = identidade.includes('@')
         ? identidade.trim()
-        : `${identidade.trim().toLowerCase()}@smsub.local`
-      await pb.collection('users').authWithPassword(email, senha)
+        : identidade.trim().toLowerCase()
+      await pb.collection('users').authWithPassword(identity, senha)
       setUsuario((pb.authStore.record as unknown as Usuario) ?? null)
     } finally {
       setCarregando(false)
