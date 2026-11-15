@@ -239,7 +239,7 @@ export default function NovoChamado() {
                 <Input
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  placeholder="Matrícula, login de rede ou nome"
+                  placeholder="RF, login de rede ou nome"
                   className="pl-8"
                   autoFocus
                 />
