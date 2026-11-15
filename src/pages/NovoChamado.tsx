@@ -33,7 +33,6 @@ export default function NovoChamado() {
     titulo: '',
     descricao: '',
     categoria_id: '',
-    canal: 'portal',
     estacao: '',
     ip: '',
   })
@@ -136,7 +135,8 @@ export default function NovoChamado() {
     setErro('')
     if (!servidor) return setErro('Selecione o solicitante.')
     if (!form.titulo.trim()) return setErro('Informe o título.')
-    if (!form.categoria_id) return setErro('Selecione a categoria.')
+    // categoria e criticidade são classificadas por admin/técnico
+    if (podeAtender && !form.categoria_id) return setErro('Selecione a categoria.')
 
     setEnviando(true)
     try {
@@ -172,11 +172,13 @@ export default function NovoChamado() {
         setor: servidor.expand?.setor_id?.nome || '',
         cargo: servidor.cargo || '',
         ramal: servidor.ramal || '',
+        // sem categoria para o usuário comum: o hook do backend grava P3
         categoria_id: form.categoria_id,
         // criticidade vem da categoria (o hook do backend confirma do lado do servidor)
         prioridade: criticidadeCalculada,
         status: 'aberto',
-        canal: form.canal,
+        // canal identificado automaticamente: abertura pelo portal (navegador)
+        canal: 'portal',
         estacao: form.estacao.trim().toUpperCase(),
         ip: form.ip.trim(),
         abertura: new Date().toISOString().replace('T', ' '),
@@ -297,61 +299,48 @@ export default function NovoChamado() {
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <Label>Categoria</Label>
-                <Select
-                  value={form.categoria_id}
-                  onValueChange={(v) => setForm({ ...form, categoria_id: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categorias.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Criticidade</Label>
-                <div className="flex h-9 items-center gap-2 rounded-md border bg-slate-50 px-3 text-sm">
-                  {form.categoria_id ? (
-                    <>
-                      <Badge variant="secondary" className={corPrioridade(criticidadeCalculada)}>
-                        {criticidadeCalculada}
-                      </Badge>
-                      <span className="truncate text-xs text-slate-500">
-                        {categorias.find((c) => c.id === form.categoria_id)?.nome || ''}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-xs text-slate-400">escolha uma categoria</span>
-                  )}
+            {podeAtender && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Categoria</Label>
+                  <Select
+                    value={form.categoria_id}
+                    onValueChange={(v) => setForm({ ...form, categoria_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <p className="text-[11px] text-slate-500">
-                  Definida automaticamente pela categoria escolhida.
-                </p>
+                <div className="space-y-1.5">
+                  <Label>Criticidade</Label>
+                  <div className="flex h-9 items-center gap-2 rounded-md border bg-slate-50 px-3 text-sm">
+                    {form.categoria_id ? (
+                      <>
+                        <Badge variant="secondary" className={corPrioridade(criticidadeCalculada)}>
+                          {criticidadeCalculada}
+                        </Badge>
+                        <span className="truncate text-xs text-slate-500">
+                          {categorias.find((c) => c.id === form.categoria_id)?.nome || ''}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xs text-slate-400">escolha uma categoria</span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Definida automaticamente pela categoria escolhida.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>Canal</Label>
-                <Select value={form.canal} onValueChange={(v) => setForm({ ...form, canal: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="portal">Portal</SelectItem>
-                    <SelectItem value="telefone">Telefone</SelectItem>
-                    <SelectItem value="presencial">Presencial</SelectItem>
-                    <SelectItem value="email">E-mail</SelectItem>
-                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">

@@ -17,6 +17,7 @@ import { formatarData } from '@/lib/formato'
 import { rotuloStatus, corStatus, corPrioridade, STATUS_ORDEM } from '@/lib/status'
 import { corSla, restanteEmTexto, percentualConsumido, minutosEmTexto } from '@/lib/sla'
 import BotaoCancelar from '@/components/BotaoCancelar'
+import ClassificarChamado from '@/components/ClassificarChamado'
 
 function Linha({ rotulo, valor }: { rotulo: string; valor?: string | null }) {
   return (
@@ -166,6 +167,13 @@ export default function ChamadoDetalhe() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {podeAtender && !c.categoria_id && (
+        <ClassificarChamado
+          chamado={c}
+          aoClassificar={(atualizado) => setC({ ...c, ...atualizado })}
+        />
       )}
 
       {podeAtender && (
