@@ -84,6 +84,11 @@ export default function TabelaChamados({
                                 ? 'Pausado'
                                 : 'No prazo'}
                       </Badge>
+                      {c.prazo_resolucao && c.sla_situacao === 'violado' && (
+                        <span className="text-[10px] font-medium text-red-600">
+                          {restanteEmTexto(c.prazo_resolucao)}
+                        </span>
+                      )}
                       {c.prazo_resolucao && !['cumprido', 'violado'].includes(c.sla_situacao) && (
                         <span className="text-[10px] text-slate-500">
                           {restanteEmTexto(c.prazo_resolucao)}

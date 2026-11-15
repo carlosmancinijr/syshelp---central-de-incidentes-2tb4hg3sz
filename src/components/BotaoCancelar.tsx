@@ -93,10 +93,7 @@ export default function BotaoCancelar({
       </Button>
 
       <AlertDialog open={aberto} onOpenChange={setAberto}>
-        <AlertDialogContent
-          onClick={(ev) => ev.stopPropagation()}
-          onPointerDownOutside={(ev) => ev.stopPropagation()}
-        >
+        <AlertDialogContent onClick={(ev) => ev.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancelar o chamado {chamado?.protocolo}?</AlertDialogTitle>
             <AlertDialogDescription>

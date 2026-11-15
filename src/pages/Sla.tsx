@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, CheckCircle2, Clock, RotateCcw } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Clock, RotateCcw, AlarmClockOff } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { corPrioridade, corStatus, rotuloStatus } from '@/lib/status'
 import { corSla, filtroAtivos, minutosEmTexto, restanteEmTexto } from '@/lib/sla'
 import { getErrorMessage } from '@/lib/pocketbase/errors'
@@ -285,6 +286,14 @@ export default function Sla() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">Escalonamento agora</CardTitle>
+          <div className="pt-1">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/backlog">
+                <AlarmClockOff className="mr-1.5 h-3.5 w-3.5" />
+                Ver fila de backlog
+              </Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y">

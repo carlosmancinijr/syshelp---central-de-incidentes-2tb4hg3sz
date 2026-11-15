@@ -11,12 +11,14 @@ import {
   History,
   Tags,
   Timer,
+  AlarmClockOff,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const itens = [
   { to: '/', label: 'Painel', icone: LayoutDashboard, soAdmin: false },
   { to: '/chamados', label: 'Chamados', icone: Ticket, soAdmin: false },
+  { to: '/backlog', label: 'Backlog', icone: AlarmClockOff, soAdmin: false },
   { to: '/historico', label: 'Histórico', icone: History, soAdmin: false },
   { to: '/novo', label: 'Abrir chamado', icone: PlusCircle, soAdmin: false },
   { to: '/cadastro', label: 'Servidores', icone: Users, soAdmin: false },

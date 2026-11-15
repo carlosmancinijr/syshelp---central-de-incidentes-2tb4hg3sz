@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Ticket, Clock, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { Ticket, Clock, CheckCircle2, AlertTriangle, AlarmClockOff } from 'lucide-react'
 import { agruparCumprimento, cumprimentoGeral } from '@/lib/slaPainel'
 import { corSla, minutosEmTexto } from '@/lib/sla'
 import { corPrioridade } from '@/lib/status'
@@ -23,6 +23,7 @@ type Resumo = {
   linhasSla: any[]
   geralSla: { total: number; noPrazo: number; percentual: number | null }
   emRisco: any[]
+  backlog: number
   mediaResposta: number | null
 }
 
@@ -41,7 +42,8 @@ export default function Painel() {
         inicioMes.setDate(1)
         inicioMes.setHours(0, 0, 0, 0)
 
-        const [total, abertos, resolvidos, recentes] = await Promise.all([
+        const agoraTxt = new Date().toISOString().replace('T', ' ')
+        const [total, abertos, resolvidos, recentes, backlog] = await Promise.all([
           pb.collection('chamados').getList(1, 1, { filter: `id!=''${filtroDono}` }),
           pb.collection('chamados').getList(1, 1, {
             filter: `status='aberto' || status='em_atendimento' || status='aguardando_solicitante' || status='aguardando_terceiro'${filtroDono}`,
@@ -52,6 +54,10 @@ export default function Painel() {
           pb.collection('chamados').getList(1, 8, {
             filter: `id!='' && (${filtroNaoEncerrados()})${filtroDono}`,
             sort: '-abertura',
+          }),
+          // Backlog: em andamento com prazo de resolução já vencido.
+          pb.collection('chamados').getList(1, 1, {
+            filter: `${filtroNaoEncerrados()} && prazo_resolucao != '' && prazo_resolucao < '${agoraTxt}' && status!='aguardando_solicitante' && status!='aguardando_terceiro'${filtroDono}`,
           }),
         ])
 
@@ -111,6 +117,7 @@ export default function Painel() {
           linhasSla,
           geralSla,
           emRisco,
+          backlog: backlog.totalItems,
           mediaResposta,
         })
       } finally {
@@ -123,6 +130,8 @@ export default function Painel() {
     }
   }, [podeAtender, usuario?.id])
 
+  const temBacklog = (dados?.backlog ?? 0) > 0
+
   const cartoes = [
     { titulo: 'Total de chamados', valor: dados?.total, icone: Ticket, cor: 'text-blue-600' },
     { titulo: 'Em aberto', valor: dados?.abertos, icone: Clock, cor: 'text-amber-600' },
@@ -131,6 +140,12 @@ export default function Painel() {
       valor: dados?.resolvidosMes,
       icone: CheckCircle2,
       cor: 'text-emerald-600',
+    },
+    {
+      titulo: 'Backlog de SLA',
+      valor: dados?.backlog ?? 0,
+      icone: AlarmClockOff,
+      cor: temBacklog ? 'text-red-600' : 'text-slate-500',
     },
   ]
 
@@ -143,7 +158,15 @@ export default function Painel() {
         </p>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {temBacklog && (
+          <Button asChild variant="outline" className="border-red-200 text-red-700 hover:bg-red-50">
+            <Link to="/backlog">
+              <AlarmClockOff className="mr-1.5 h-4 w-4" />
+              Backlog de SLA ({(dados?.backlog ?? 0).toLocaleString('pt-BR')})
+            </Link>
+          </Button>
+        )}
         <Button asChild variant="outline">
           <Link to="/historico">
             <History className="mr-1.5 h-4 w-4" />
@@ -152,7 +175,7 @@ export default function Painel() {
         </Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-4">
         {cartoes.map((c) => {
           const Icone = c.icone
           return (
