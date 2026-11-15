@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { getErrorMessage } from '@/lib/pocketbase/errors'
 import { corPrioridade } from '@/lib/status'
 import { Search, Check, AlertCircle } from 'lucide-react'
 
@@ -159,12 +160,7 @@ export default function NovoChamado() {
           })
       }
 
-      const ano = new Date().getFullYear()
-      const total = await pb.collection('chamados').getList(1, 1)
-      const seq = String(total.totalItems + 1).padStart(5, '0')
-
       await pb.collection('chamados').create({
-        protocolo: `INC-${ano}-${seq}`,
         titulo: form.titulo.trim(),
         descricao: form.descricao.trim(),
         solicitante_id: servidor.id,
@@ -185,7 +181,7 @@ export default function NovoChamado() {
       })
       navegar('/chamados')
     } catch (x: any) {
-      setErro(x?.message || 'Não foi possível abrir o chamado.')
+      setErro(getErrorMessage(x) || 'Não foi possível abrir o chamado.')
     } finally {
       setEnviando(false)
     }
